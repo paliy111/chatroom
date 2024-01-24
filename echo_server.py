@@ -5,7 +5,7 @@ import threading
 
 
 def main():
-    def handle_client(connection):
+    def _handle_client(connection):
         PRETEND_TO_DO_WORK = 5
         time.sleep(PRETEND_TO_DO_WORK)
         data = connection.recv(1024)
@@ -22,7 +22,7 @@ def main():
         while True:
             connection, peer_address = server.accept()
             logging.info(f'Connection from {peer_address}')
-            thread = threading.Thread(target=handle_client, args=(connection,))
+            thread = threading.Thread(target=_handle_client, args=(connection,))
             thread.start()
 
     serve()
