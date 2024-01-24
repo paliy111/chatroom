@@ -5,7 +5,7 @@ import threading
 
 
 def main():
-    def _handle_client(connection):
+    def handle_client(connection):
         PRETEND_TO_DO_WORK = 5
         time.sleep(PRETEND_TO_DO_WORK)
         data = connection.recv(1024)
@@ -14,16 +14,18 @@ def main():
         connection.send(answer.encode('utf-8'))
         connection.close()
 
-    server = socket.socket()
-    server.bind(('', 3333))
-    server.listen(5)
+    def serve():
+        server = socket.socket()
+        server.bind(('', 3333))
+        server.listen(5)
 
-    while True:
-        connection, peer_address = server.accept()
-        logging.info(f'Connection from {peer_address}')
-        thread = threading.Thread(target=_handle_client, args=(connection,))
-        thread.start()
+        while True:
+            connection, peer_address = server.accept()
+            logging.info(f'Connection from {peer_address}')
+            thread = threading.Thread(target=handle_client, args=(connection,))
+            thread.start()
 
+    serve()
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
