@@ -13,7 +13,8 @@ def message_decoder(message, sender, usernames, messages):
         response = {"code": "welcome"}
         messages[sender].append(response)
     elif code == "who":
-        pass  # TODO
+        response = {"code": "users", "users": list(usernames.keys())}
+        messages[sender].append(response)
     elif code == "outgoing_broadcast":
         pass  # TODO
     elif code == "outgoing":
