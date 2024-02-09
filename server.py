@@ -5,6 +5,9 @@ import logging
 import safe_connection
 import json
 
+def find_key_for_value(d, value):
+    keys_for_value = [key for key, val in d.items() if val == value]
+    return keys_for_value[0]
 
 def message_decoder(message, sender, usernames, messages):
     code = message["code"]
@@ -12,12 +15,19 @@ def message_decoder(message, sender, usernames, messages):
         usernames[message["username"]] = sender
         response = {"code": "welcome"}
         messages[sender].append(response)
+
     elif code == "who":
         response = {"code": "users", "users": list(usernames.keys())}
         messages[sender].append(response)
-    elif code == "outgoing_broadcast":
-        pass  # TODO
+
     elif code == "outgoing":
+        if message["to"] in usernames.keys():
+            response = {"code": "incoming", "from": find_key_for_value(usernames, sender), "content": message["content"]}
+            messages[usernames[message["to"]]].append(response)
+        else:
+            pass
+
+    elif code == "outgoing_broadcast":
         pass  # TODO
     elif code == "quit":
         pass  # TODO
