@@ -6,11 +6,12 @@ import safe_connection
 import json
 
 
-def message_decoder(message, sender, usernames):
-    decoded_message = json.loads(message)
-    code = decoded_message["code"]
+def message_decoder(message, sender, usernames, messages):
+    code = message["code"]
     if code == "hello":
-        pass  # TODO
+        usernames[message["username"]] = sender
+        response = {"code": "welcome"}
+        messages[sender].append(response)
     elif code == "who":
         pass  # TODO
     elif code == "outgoing_broadcast":
