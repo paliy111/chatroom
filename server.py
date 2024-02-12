@@ -1,3 +1,4 @@
+import collections
 import socket
 import argparse
 import select
@@ -5,11 +6,13 @@ import logging
 import safe_connection
 import json
 
+
 def find_key_for_value(d, value):
     keys_for_value = [key for key, val in d.items() if val == value]
     return keys_for_value[0]
 
-def message_decoder(message, sender, usernames, messages):
+
+def message_decoder(message, sender, usernames: dict, messages: dict):
     code = message["code"]
     if code == "hello":
         usernames[message["username"]] = sender
@@ -28,14 +31,19 @@ def message_decoder(message, sender, usernames, messages):
             pass
 
     elif code == "outgoing_broadcast":
-        pass  # TODO
+        for user in usernames.values():
+            response = {"code": "incoming_broadcast", "from": find_key_for_value(usernames, sender),
+                        "content": message["content"]}
+            messages[user].append(response)
     elif code == "quit":
-        pass  # TODO
+        sender.close()
+        del usernames[find_key_for_value(usernames, sender)]
+        del messages[sender]
     else:
         pass  # TODO
 
 
-def handle_reads(read_ready, messages: dict[safe_connection.SafeConnection, str]):
+def handle_reads(read_ready, messages: dict):
     for connection in read_ready:
         logging.info(f'Connection ready to read: {connection}')
         message = connection.recv(1024).decode()
@@ -68,7 +76,7 @@ def serve(port):
 
     connections = []
     user_names = {}
-    messages = {}
+    messages = collections.defaultdict(list)
 
     while True:
         read_ready, write_ready, errors = select.select(connections + [server], connections, [])
