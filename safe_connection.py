@@ -25,5 +25,9 @@ class SafeConnection:
     def send(self, data):
         return self._safe_call(self._connection.send, 0, data)
 
+    def close(self):
+        self._done = True
+        self._connection.close()
+
     def done(self):
         return self._done
