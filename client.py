@@ -18,9 +18,12 @@ def main(host, port, nickname):
             return
         if message == 'who':
             sock_message_send = {"code": "who"}
-        else: #TODO we need to check if the user name is illegal, and if not spam every user with the message
+        else:
             user, text_content = message.split('|', 1)
-            sock_message_send = {"code": "send_message", "to": user, "content": text_content}
+            if user == '*':
+                sock_message_send = {"code": "outgoing_broadcast", "content": text_content}
+            else:
+                sock_message_send = {"code": "send_message", "to": user, "content": text_content}
 
         sock.send(sock_message_send.encode())
         response = sock.recv(1024)
@@ -32,6 +35,6 @@ if __name__ == '__main__':
     parser.add_argument('server_ip')
     parser.add_argument('server_port', type=int)
     parser.add_argument('my_nickname', type=str)
-
+    #TODO check that the nickname is not *
     arguments = parser.parse_args()
     main(arguments.server_ip, arguments.server_port, arguments.my_nickname)
