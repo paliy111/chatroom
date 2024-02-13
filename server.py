@@ -15,7 +15,8 @@ def find_key_for_value(d, value):
 def message_decoder(message, sender, usernames: dict, messages: dict):
     code = message["code"]
     if code == "hello":
-        usernames[message["username"]] = sender
+        username = message["name"]
+        usernames[username] = sender
         response = {"code": "welcome"}
         messages[sender].append(response)
 
