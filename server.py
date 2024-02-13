@@ -36,9 +36,9 @@ def message_decoder(message, sender, usernames: dict, messages: dict):
                         "content": message["content"]}
             messages[user].append(response)
     elif code == "quit":
-        sender.close()
         del usernames[find_key_for_value(usernames, sender)]
         del messages[sender]
+        sender.close()
     else:
         pass  # TODO
 
