@@ -2,9 +2,15 @@ import logging
 import socket
 import argparse
 
-def main(host, port):
+def main(host, port, nickname):
     sock = socket.socket()
     sock.connect((host, port))
+
+    sock_hello_message = {"code": "hello", "nickname": nickname}
+    sock.send(sock_hello_message.encode())
+    response = sock.recv(1024)
+    print(f'< {response.decode()}')
+
     while True:
         message = input('> ')
         if message == 'quit':
@@ -28,4 +34,4 @@ if __name__ == '__main__':
     parser.add_argument('my_nickname', type=str)
 
     arguments = parser.parse_args()
-    main(arguments.host, arguments.port)
+    main(arguments.server_ip, arguments.server_port, arguments.my_nickname)
