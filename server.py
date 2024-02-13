@@ -31,8 +31,11 @@ def message_decoder(message, sender, usernames: dict, messages: dict):
             pass
 
     elif code == "outgoing_broadcast":
-        for user in usernames.values():
-            response = {"code": "incoming_broadcast", "from": find_key_for_value(usernames, sender),
+        senders_name = find_key_for_value(usernames, sender)
+        for name, user in usernames.items():
+            if senders_name == name:
+                continue
+            response = {"code": "incoming_broadcast", "from": senders_name,
                         "content": message["content"]}
             messages[user].append(response)
     elif code == "quit":
