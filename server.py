@@ -31,35 +31,45 @@ def message_decoder(message, sender, usernames: dict, messages: dict):
             pass
 
     elif code == "outgoing_broadcast":
-        for user in usernames.values():
-            response = {"code": "incoming_broadcast", "from": find_key_for_value(usernames, sender),
+        senders_name = find_key_for_value(usernames, sender)
+        for name, user in usernames.items():
+            if senders_name == name:
+                continue
+            response = {"code": "incoming_broadcast", "from": senders_name,
                         "content": message["content"]}
             messages[user].append(response)
     elif code == "quit":
-        sender.close()
         del usernames[find_key_for_value(usernames, sender)]
         del messages[sender]
+        sender.close()
     else:
         pass  # TODO
 
 
-def handle_reads(read_ready, messages: dict):
+def handle_reads(read_ready, messages: dict, usernames):
     for connection in read_ready:
         logging.info(f'Connection ready to read: {connection}')
         message = connection.recv(1024).decode()
+        try:
+            decoded_message = json.loads(message)
+        except json.JSONDecodeError as e:
+            logging.error(e)
+            logging.error(f'invalid json from {connection}: {message}')
+            continue
         logging.info(f'Received message: {message} {len(message)}')
-
-        messages[connection] = message
+        message_decoder(decoded_message, sender=connection, usernames=usernames, messages=messages)
 
 
 def handle_writes(write_ready, messages):
     for connection in write_ready:
         if connection not in messages:
             continue
-        message = messages[connection]
+        message = messages[connection].pop(0)
+        message = json.dumps(message)
         logging.info(f'Connection ready to write: {connection}: {message}')
-        connection.send(f'Echo: {message}'.encode())
-        del messages[connection]
+        connection.send(message.encode())
+        if not messages[connection]:
+            del messages[connection]
 
 
 def accept_connection(server, connections):
@@ -75,18 +85,18 @@ def serve(port):
     server.listen(5)
 
     connections = []
-    user_names = {}
+    usernames = {}
     messages = collections.defaultdict(list)
 
     while True:
         read_ready, write_ready, errors = select.select(connections + [server], connections, [])
-        logging.info(f'Ready to read: {len(read_ready)} Ready to write: {len(write_ready)}')
-        logging.info(f'errors: {len(errors)}')
+        logging.debug(f'Ready to read: {len(read_ready)} Ready to write: {len(write_ready)}')
+        logging.debug(f'errors: {len(errors)}')
         if server in read_ready:
             accept_connection(server, connections)
             read_ready.remove(server)
 
-        handle_reads(read_ready, messages)
+        handle_reads(read_ready, messages, usernames)
         handle_writes(write_ready, messages)
         connections = [connection for connection in connections if not connection.done()]
 
