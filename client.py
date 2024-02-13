@@ -12,7 +12,7 @@ def main(host, port, nickname):
     print(f'< {response.decode()}')
 
     while True:
-        message = input('> ')
+        message = input('client> ')
         if message == 'quit':
             sock.close()
             return
@@ -27,7 +27,8 @@ def main(host, port, nickname):
 
         sock.send(sock_message_send.encode())
         response = sock.recv(1024)
-        print(f'< {response.decode()}')
+        print(f'server> {response.decode()}')
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
