@@ -1,13 +1,15 @@
 import logging
 import socket
 import argparse
+import json
 
 def main(host, port, nickname):
     sock = socket.socket()
     sock.connect((host, port))
 
     sock_hello_message = {"code": "hello", "nickname": nickname}
-    sock.send(sock_hello_message.encode())
+    json_sock_hello_message = json.dumps(sock_hello_message)
+    sock.send(json_sock_hello_message.encode())
     response = sock.recv(1024)
     print(f'< {response.decode()}')
 
@@ -25,7 +27,8 @@ def main(host, port, nickname):
             else:
                 sock_message_send = {"code": "send_message", "to": user, "content": text_content}
 
-        sock.send(sock_message_send.encode())
+        json_sock_message_send = json.dumps(sock_message_send)
+        sock.send(json_sock_message_send.encode())
         response = sock.recv(1024)
         print(f'server> {response.decode()}')
 
