@@ -7,7 +7,7 @@ def main(host, port, nickname):
     sock = socket.socket()
     sock.connect((host, port))
 
-    sock_hello_message = {"code": "hello", "nickname": nickname}
+    sock_hello_message = {"code": "hello", "name": nickname}
     json_sock_hello_message = json.dumps(sock_hello_message)
     sock.send(json_sock_hello_message.encode())
     response = sock.recv(1024)
