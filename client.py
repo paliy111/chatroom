@@ -50,7 +50,7 @@ def sender_thread(sock):
             if user == '*':
                 sock_message_send = {"code": "outgoing_broadcast", "content": text_content}
             else:
-                sock_message_send = {"code": "send_message", "to": user, "content": text_content}
+                sock_message_send = {"code": "outgoing", "to": user, "content": text_content}
         else:
             print('Invalid message format')
             continue
