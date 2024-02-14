@@ -30,7 +30,7 @@ def sender_thread(sock):
             sock.close()
             return
         if message == 'who':
-            sock_message_send = {"code": "who"}
+              = {"code": "who"}
         if '|' in message:
             user, text_content = message.split('|', 1)
             if user == '*':
