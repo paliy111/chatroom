@@ -12,7 +12,7 @@ def main(host, port, nickname):
     hello_message = json.dumps({"code": "hello", "name": nickname})
     sock.send(hello_message.encode())
     response = sock.recv(1024)
-    if json.loads(response.decode())["code"] != "hello":
+    if json.loads(response.decode())["code"] != "welcome":
         print("invalid server response")
         sock.close()
         return
