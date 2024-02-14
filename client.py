@@ -4,11 +4,8 @@ import argparse
 import json
 import threading
 
-import safe_connection
-
 
 def main(host, port, nickname):
-    print(f"connecting to server at {host}:{port}")
     sock = socket.socket()
     sock.connect((host, port))
 
@@ -33,6 +30,7 @@ def main(host, port, nickname):
     reader_thread = threading.Thread(target=receiver_thread, args=(sock,))
     writer_thread = threading.Thread(target=sender_thread, args=(sock,))
     reader_thread.start()
+    writer_thread = threading.Thread(target=sender_thread, args=(sock,))
     writer_thread.start()
     writer_thread.join()
     reader_thread.join()
