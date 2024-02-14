@@ -4,7 +4,7 @@ import socket
 
 class SafeConnection:
     def __init__(self, connection):
-        self._connection = connection
+        self._connection: socket.socket = connection
         self._done = False
 
     def fileno(self):
