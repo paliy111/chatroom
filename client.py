@@ -4,20 +4,35 @@ import argparse
 import json
 import threading
 
+import safe_connection
+
 
 def main(host, port, nickname):
+    print(f"connecting to server at {host}:{port}")
     sock = socket.socket()
     sock.connect((host, port))
 
-    sock_hello_message = {"code": "hello", "name": nickname}
-    json_sock_hello_message = json.dumps(sock_hello_message)
-    sock.send(json_sock_hello_message.encode())
+    hello_message = json.dumps({"code": "hello", "name": nickname})
+    sock.send(hello_message.encode())
     response = sock.recv(1024)
-    print(f'> {response.decode()}')
+    if json.loads(response.decode())["code"] != "hello":
+        print("invalid server response")
+        sock.close()
+        return
 
+    who_message = b'{"code": "who"}'
+    sock.send(who_message)
+    response = sock.recv(1024).decode()
+    jsonified_response = json.loads(response)
+    if jsonified_response["code"] != "users":
+        print("invalid server response")
+        sock.close()
+        return
+    for user in jsonified_response["users"]:
+        print(user)
     reader_thread = threading.Thread(target=receiver_thread, args=(sock,))
-    reader_thread.start()
     writer_thread = threading.Thread(target=sender_thread, args=(sock,))
+    reader_thread.start()
     writer_thread.start()
     writer_thread.join()
     reader_thread.join()
@@ -27,11 +42,12 @@ def sender_thread(sock):
     while True:
         message = input('client> ')
         if message == 'quit':
+            sock.send(br'{"code": "quit"}')
             sock.close()
             return
-        if message == 'who':
+        elif message == 'who':
             sock_message_send = {"code": "who"}
-        if '|' in message:
+        elif '|' in message:
             user, text_content = message.split('|', 1)
             if user == '*':
                 sock_message_send = {"code": "outgoing_broadcast", "content": text_content}
