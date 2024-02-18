@@ -5,61 +5,7 @@ import select
 import logging
 import safe_connection
 import json
-
-
-def find_key_for_value(d, value):
-    keys_for_value = [key for key, val in d.items() if val == value]
-    return keys_for_value[0]
-
-def message_decoder_code_is_hello(message, sender, usernames: dict, messages: dict):
-    usernames[message["name"]] = sender
-    response = {"code": "welcome"}
-    messages[sender].append(response)
-
-def message_decoder_code_is_who(sender, usernames: dict, messages: dict):
-    response = {"code": "users", "users": list(usernames.keys())}
-    messages[sender].append(response)
-
-def message_decoder_code_is_outgoing(message, sender, usernames: dict, messages: dict):
-    if message["to"] in usernames.keys():
-        response = {"code": "incoming", "from": find_key_for_value(usernames, sender), "content": message["content"]}
-        messages[usernames[message["to"]]].append(response)
-    else:
-        pass
-
-def  message_decoder_code_is_outgoing_broadcast(message, sender, usernames: dict, messages: dict):
-    senders_name = find_key_for_value(usernames, sender)
-    for name, user in usernames.items():
-        if senders_name == name:
-            continue
-        response = {"code": "incoming_broadcast", "from": senders_name,
-                    "content": message["content"]}
-        messages[user].append(response)
-
-
-def message_decoder_code_is_quit(sender, usernames: dict, messages: dict):
-        del usernames[find_key_for_value(usernames, sender)]
-        del messages[sender]
-        sender.close()
-
-def message_decoder(message, sender, usernames: dict, messages: dict):
-    code = message["code"]
-    if code == "hello":
-        message_decoder_code_is_hello(message, sender, usernames, messages)
-
-    elif code == "who":
-        message_decoder_code_is_who(sender, usernames, messages)
-
-    elif code == "outgoing":
-        message_decoder_code_is_outgoing(message, sender, usernames, messages)
-
-    elif code == "outgoing_broadcast":
-        message_decoder_code_is_outgoing_broadcast(message, sender, usernames, messages)
-
-    elif code == "quit":
-        message_decoder_code_is_quit(sender, usernames, messages)
-    else:
-        pass  # TODO
+import message_handler
 
 
 def handle_reads(read_ready, messages: dict, usernames):
@@ -73,7 +19,7 @@ def handle_reads(read_ready, messages: dict, usernames):
             logging.error(f'invalid json from {connection}: {message}')
             continue
         logging.info(f'Received message: {message} {len(message)}')
-        message_decoder(decoded_message, sender=connection, usernames=usernames, messages=messages)
+        message_handler.message_decoder(decoded_message, sender=connection, usernames=usernames, messages=messages)
 
 
 def handle_writes(write_ready, messages):

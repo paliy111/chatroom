@@ -30,7 +30,6 @@ def main(host, port, nickname):
     reader_thread = threading.Thread(target=receiver_thread, args=(sock,))
     writer_thread = threading.Thread(target=sender_thread, args=(sock,))
     reader_thread.start()
-    writer_thread = threading.Thread(target=sender_thread, args=(sock,))
     writer_thread.start()
     writer_thread.join()
     reader_thread.join()
@@ -68,13 +67,12 @@ def receiver_thread(sock):
             return
 
 
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
     parser = argparse.ArgumentParser()
     parser.add_argument('server_ip')
     parser.add_argument('server_port', type=int)
     parser.add_argument('my_nickname', type=str)
-    #TODO check that the nickname is not *
+    #  TODO check that the nickname is not *
     arguments = parser.parse_args()
     main(arguments.server_ip, arguments.server_port, arguments.my_nickname)
