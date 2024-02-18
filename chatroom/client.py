@@ -12,6 +12,8 @@ def send_hello_message(sock, nickname):
         print("invalid server response")
         sock.close()
         return
+    else:
+        print_response(json.loads(response.decode()))
 
 def send_who_message(sock):
     who_message = b'{"code": "who"}'
@@ -70,11 +72,29 @@ def sender_thread(sock):
         sock.send(json_sock_message_send.encode())
 
 
+def print_response(response):
+    if response["code"] == "welcome":
+        print(f'\nserver> welcome\n')
+
+    elif response["code"] == "users":
+        print(f'\nserver> users: {response["users"]}\nclient>', end='')
+
+    elif response["code"] == "incoming":
+        print(f'\n{response["from"]}> {response["content"]}\nclient>', end='')
+
+    elif response["code"] == "incoming_broadcast":
+        print(f'\nbroadcast from {response["from"]}> {response["content"]}\nclient>', end='')
+
+    else:
+        print(f'\n{response}\nclient>', end='')
+
 def receiver_thread(sock):
     while True:
         try:
             response = sock.recv(1024)
-            print(f'server> {response.decode()}')
+            response_decode = json.loads(response.decode())
+            print_response(response_decode)
+
         except ConnectionResetError:
             print('Connection closed by server')
             return
