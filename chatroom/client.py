@@ -4,11 +4,7 @@ import argparse
 import json
 import threading
 
-
-def main(host, port, nickname):
-    sock = socket.socket()
-    sock.connect((host, port))
-
+def send_hello_message(sock, nickname):
     hello_message = json.dumps({"code": "hello", "name": nickname})
     sock.send(hello_message.encode())
     response = sock.recv(1024)
@@ -17,6 +13,7 @@ def main(host, port, nickname):
         sock.close()
         return
 
+def send_who_message(sock):
     who_message = b'{"code": "who"}'
     sock.send(who_message)
     response = sock.recv(1024).decode()
@@ -24,15 +21,31 @@ def main(host, port, nickname):
     if jsonified_response["code"] != "users":
         print("invalid server response")
         sock.close()
-        return
-    for user in jsonified_response["users"]:
-        print(user)
+        return []
+    return jsonified_response["users"]
+
+def start_threads(sock):
     reader_thread = threading.Thread(target=receiver_thread, args=(sock,))
     writer_thread = threading.Thread(target=sender_thread, args=(sock,))
     reader_thread.start()
     writer_thread.start()
     writer_thread.join()
     reader_thread.join()
+
+def main(host, port, nickname):
+    sock = socket.socket()
+    sock.connect((host, port))
+
+    if nickname == '*':
+        print("invalid username: '*'")
+
+    send_hello_message(sock, nickname)
+
+    users = send_who_message(sock)
+    for user in users:
+        print(user)
+
+    start_threads(sock)
 
 
 def sender_thread(sock):
@@ -73,6 +86,5 @@ if __name__ == '__main__':
     parser.add_argument('server_ip')
     parser.add_argument('server_port', type=int)
     parser.add_argument('my_nickname', type=str)
-    #  TODO check that the nickname is not *
     arguments = parser.parse_args()
     main(arguments.server_ip, arguments.server_port, arguments.my_nickname)
