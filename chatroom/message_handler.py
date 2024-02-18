@@ -5,6 +5,7 @@ def find_key_for_value(d, value):
 def _handle_hello(message, sender, usernames: dict, messages: dict):
     usernames[message["name"]] = sender
     response = {"code": "welcome"}
+    messages[sender] = []
     messages[sender].append(response)
 
 def _handle_who(_, sender, usernames: dict, messages: dict):
@@ -27,7 +28,8 @@ def _handle_broadcast(message, sender, usernames: dict, messages: dict):
 
 def _handle_quit(_, sender, usernames: dict, messages: dict):
     del usernames[find_key_for_value(usernames, sender)]
-    del messages[sender]
+    if sender in messages:
+        del messages[sender]
     sender.close()
 
 def message_decoder(message, sender, usernames: dict, messages: dict):
