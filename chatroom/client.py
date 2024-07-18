@@ -50,6 +50,10 @@ def main(host, port, nickname):
     start_threads(sock)
 
 
+
+
+
+
 def sender_thread(sock):
     while True:
         message = input('client> ')
